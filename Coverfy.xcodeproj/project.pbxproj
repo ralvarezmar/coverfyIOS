@@ -1,0 +1,339 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000000000000000001 /* CoverfyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000001 /* CoverfyApp.swift */; };
+		AA000000000000000002 /* Warranty.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000002 /* Warranty.swift */; };
+		AA000000000000000003 /* ReceiptParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000003 /* ReceiptParser.swift */; };
+		AA000000000000000004 /* ReceiptScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000004 /* ReceiptScanner.swift */; };
+		AA000000000000000005 /* ExpiryNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000005 /* ExpiryNotifier.swift */; };
+		AA000000000000000006 /* ClaimGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000006 /* ClaimGenerator.swift */; };
+		AA000000000000000007 /* WarrantyListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000007 /* WarrantyListView.swift */; };
+		AA000000000000000008 /* AddWarrantyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000008 /* AddWarrantyView.swift */; };
+		AA000000000000000009 /* WarrantyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000000000000000009 /* WarrantyDetailView.swift */; };
+		AA00000000000000000A /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000A /* CameraView.swift */; };
+		AA00000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000B /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BB000000000000000000 /* Coverfy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Coverfy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB000000000000000001 /* CoverfyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverfyApp.swift; sourceTree = "<group>"; };
+		BB000000000000000002 /* Warranty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Warranty.swift; sourceTree = "<group>"; };
+		BB000000000000000003 /* ReceiptParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParser.swift; sourceTree = "<group>"; };
+		BB000000000000000004 /* ReceiptScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptScanner.swift; sourceTree = "<group>"; };
+		BB000000000000000005 /* ExpiryNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpiryNotifier.swift; sourceTree = "<group>"; };
+		BB000000000000000006 /* ClaimGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimGenerator.swift; sourceTree = "<group>"; };
+		BB000000000000000007 /* WarrantyListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarrantyListView.swift; sourceTree = "<group>"; };
+		BB000000000000000008 /* AddWarrantyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddWarrantyView.swift; sourceTree = "<group>"; };
+		BB000000000000000009 /* WarrantyDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarrantyDetailView.swift; sourceTree = "<group>"; };
+		BB00000000000000000A /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		BB00000000000000000B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CC000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DD000000000000000000 = {
+			isa = PBXGroup;
+			children = (
+				DD000000000000000001 /* Coverfy */,
+				DD000000000000000002 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DD000000000000000001 /* Coverfy */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000001 /* CoverfyApp.swift */,
+				DD000000000000000003 /* Models */,
+				DD000000000000000004 /* OCR */,
+				DD000000000000000005 /* Notifications */,
+				DD000000000000000006 /* Claim */,
+				DD000000000000000007 /* Views */,
+				BB00000000000000000B /* Assets.xcassets */,
+			);
+			path = Coverfy;
+			sourceTree = "<group>";
+		};
+		DD000000000000000002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000000 /* Coverfy.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DD000000000000000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000002 /* Warranty.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		DD000000000000000004 /* OCR */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000003 /* ReceiptParser.swift */,
+				BB000000000000000004 /* ReceiptScanner.swift */,
+			);
+			path = OCR;
+			sourceTree = "<group>";
+		};
+		DD000000000000000005 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000005 /* ExpiryNotifier.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
+		DD000000000000000006 /* Claim */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000006 /* ClaimGenerator.swift */,
+			);
+			path = Claim;
+			sourceTree = "<group>";
+		};
+		DD000000000000000007 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				BB000000000000000007 /* WarrantyListView.swift */,
+				BB000000000000000008 /* AddWarrantyView.swift */,
+				BB000000000000000009 /* WarrantyDetailView.swift */,
+				BB00000000000000000A /* CameraView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		EE000000000000000001 /* Coverfy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FF000000000000000002 /* Build configuration list for PBXNativeTarget "Coverfy" */;
+			buildPhases = (
+				CC000000000000000002 /* Sources */,
+				CC000000000000000001 /* Frameworks */,
+				CC000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Coverfy;
+			productName = Coverfy;
+			productReference = BB000000000000000000 /* Coverfy.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EE000000000000000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					EE000000000000000001 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+				};
+			};
+			buildConfigurationList = FF000000000000000001 /* Build configuration list for PBXProject "Coverfy" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				es,
+			);
+			mainGroup = DD000000000000000000;
+			productRefGroup = DD000000000000000002 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EE000000000000000001 /* Coverfy */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CC000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA00000000000000000B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CC000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000000000000000001 /* CoverfyApp.swift in Sources */,
+				AA000000000000000002 /* Warranty.swift in Sources */,
+				AA000000000000000003 /* ReceiptParser.swift in Sources */,
+				AA000000000000000004 /* ReceiptScanner.swift in Sources */,
+				AA000000000000000005 /* ExpiryNotifier.swift in Sources */,
+				AA000000000000000006 /* ClaimGenerator.swift in Sources */,
+				AA000000000000000007 /* WarrantyListView.swift in Sources */,
+				AA000000000000000008 /* AddWarrantyView.swift in Sources */,
+				AA000000000000000009 /* WarrantyDetailView.swift in Sources */,
+				AA00000000000000000A /* CameraView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		FF000000000000000010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FF000000000000000011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FF000000000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Coverfy;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Coverfy necesita la cámara para escanear tus tickets de compra.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.coverfy.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FF000000000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Coverfy;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Coverfy necesita la cámara para escanear tus tickets de compra.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.coverfy.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FF000000000000000001 /* Build configuration list for PBXProject "Coverfy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FF000000000000000010 /* Debug */,
+				FF000000000000000011 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FF000000000000000002 /* Build configuration list for PBXNativeTarget "Coverfy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FF000000000000000012 /* Debug */,
+				FF000000000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EE000000000000000000 /* Project object */;
+}
