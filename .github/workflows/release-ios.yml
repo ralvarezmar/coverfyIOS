@@ -1,0 +1,499 @@
+name: iOS Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    # macos-26 ships the latest stable Xcode/SDK required by App Store Connect
+    # for uploads. Older images are rejected on validation.
+    runs-on: macos-26
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+      ASC_TEAM_ID: ${{ secrets.ASC_TEAM_ID }}
+      BETA_GROUP_NAME: Pruebas
+      MINIMUM_MARKETING_VERSION: "0.0.1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate semantic version
+        id: calculated_version
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          dry_run: true
+
+      - name: Resolve marketing version
+        id: version
+        env:
+          CALCULATED_VERSION: ${{ steps.calculated_version.outputs.new_version }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+
+          calculated = os.environ.get("CALCULATED_VERSION", "").strip()
+          minimum = os.environ["MINIMUM_MARKETING_VERSION"].strip()
+          on_main = os.environ.get("GITHUB_REF") == "refs/heads/main"
+
+          def parse(version):
+              match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", version)
+              if not match:
+                  raise SystemExit(f"Invalid semantic version: {version!r}")
+              return tuple(int(part) for part in match.groups())
+
+          minimum_parts = parse(minimum)
+          if on_main:
+              calculated_parts = parse(calculated) if calculated else minimum_parts
+              final_parts = max(calculated_parts, minimum_parts)
+          else:
+              final_parts = (0, 0, int(os.environ["RUN_NUMBER"]))
+
+          final_version = ".".join(str(part) for part in final_parts)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"name={final_version}\n")
+              output.write(f"tag=v{final_version}\n")
+              output.write(f"code={os.environ['RUN_NUMBER']}\n")
+          PY
+
+      - name: Create semantic tag
+        id: tag_version
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ steps.version.outputs.tag }}
+
+      - name: Select newest Xcode and show SDK
+        run: |
+          latest="$(ls -d /Applications/Xcode_*.app 2>/dev/null | grep -viE 'beta|release_candidate' | sort -V | tail -1)"
+          if [ -n "$latest" ]; then
+            sudo xcode-select -s "$latest/Contents/Developer"
+          fi
+          xcodebuild -version
+          echo "::notice title=Xcode::$(xcodebuild -version | tr '\n' ' ')/ $(xcodebuild -showsdks | grep -o 'iphoneos[0-9.]*' | sort -V | tail -1)"
+
+      - name: Check App Store Connect credentials
+        id: credentials
+        run: |
+          set -euo pipefail
+          if [[ -z "$ASC_KEY_ID" || -z "$ASC_ISSUER_ID" || -z "$ASC_API_KEY_P8" ]]; then
+            echo "::warning::Configure ASC_KEY_ID, ASC_ISSUER_ID, and ASC_API_KEY_P8 to enable releases."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stamp changelog
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          release_date="$(TZ=UTC date +%Y-%m-%d)"
+          python3 scripts/stamp_changelog.py \
+            --changelog CHANGELOG.md \
+            --unreleased-heading Unreleased \
+            --version "$NEW_VERSION" \
+            --date "$release_date"
+
+      - name: Prepare App Store Connect API key
+        if: steps.credentials.outputs.configured == 'true'
+        run: |
+          KEY_DIR="$RUNNER_TEMP/app-store-connect"
+          KEY_PATH="$KEY_DIR/AuthKey_${ASC_KEY_ID}.p8"
+          mkdir -p "$KEY_DIR" "$HOME/.appstoreconnect/private_keys"
+          printf '%s' "$ASC_API_KEY_P8" | base64 -D > "$KEY_PATH"
+          chmod 600 "$KEY_PATH"
+          cp "$KEY_PATH" "$HOME/.appstoreconnect/private_keys/"
+          echo "ASC_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+
+      - name: Import distribution certificate and provisioning profile
+        if: steps.credentials.outputs.configured == 'true'
+        env:
+          IOS_DIST_CERT_P12: ${{ secrets.IOS_DIST_CERT_P12 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_APP_PROFILE: ${{ secrets.IOS_APP_PROFILE }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$IOS_DIST_CERT_P12" || -z "$IOS_DIST_CERT_PASSWORD" || -z "$IOS_APP_PROFILE" ]]; then
+            echo "::error::Manual signing secrets missing. Configure IOS_DIST_CERT_P12, IOS_DIST_CERT_PASSWORD and IOS_APP_PROFILE."
+            exit 1
+          fi
+
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PW="$(openssl rand -base64 24)"
+          security create-keychain -p "$KEYCHAIN_PW" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PW" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          security default-keychain -s "$KEYCHAIN"
+
+          CERT_P12="$RUNNER_TEMP/dist-cert.p12"
+          printf '%s' "$IOS_DIST_CERT_P12" | base64 -D > "$CERT_P12"
+          security import "$CERT_P12" -k "$KEYCHAIN" -P "$IOS_DIST_CERT_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PW" "$KEYCHAIN" >/dev/null
+
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -oE '"[^"]+"' | head -n1 | tr -d '"')"
+          if [ -z "$IDENTITY" ]; then
+            echo "::error::No code signing identity found in the imported .p12"
+            security find-identity -v -p codesigning "$KEYCHAIN" || true
+            exit 1
+          fi
+          echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+          echo "Signing identity: $IDENTITY"
+
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILE_DIR"
+          : > "$RUNNER_TEMP/profile-map.txt"
+          tmp="$RUNNER_TEMP/prof.mobileprovision"
+          plist="$RUNNER_TEMP/prof.plist"
+          printf '%s' "$IOS_APP_PROFILE" | base64 -D > "$tmp"
+          security cms -D -i "$tmp" > "$plist"
+          uuid="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$plist")"
+          name="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$plist")"
+          appid="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$plist")"
+          bundle="${appid#*.}"
+          cp "$tmp" "$PROFILE_DIR/$uuid.mobileprovision"
+          printf '%s=%s\n' "$bundle" "$name" >> "$RUNNER_TEMP/profile-map.txt"
+          echo "Installed profile '$name' ($uuid) for bundle $bundle"
+
+      - name: Archive app
+        if: steps.credentials.outputs.configured == 'true'
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+        run: |
+          set -o pipefail
+          # Distribution signing is applied at export time, not archive time.
+          MARKETING_VERSION="${VERSION_NAME}"
+          CURRENT_PROJECT_VERSION="${GITHUB_RUN_NUMBER}"
+          echo "Building version $MARKETING_VERSION ($CURRENT_PROJECT_VERSION)"
+          xcodebuild archive \
+            -project Coverfy.xcodeproj \
+            -scheme Coverfy \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$RUNNER_TEMP/Coverfy.xcarchive" \
+            MARKETING_VERSION="$MARKETING_VERSION" \
+            CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | tee "$RUNNER_TEMP/xcodebuild-archive.log"
+
+      - name: Surface archive failure
+        if: failure()
+        run: |
+          log="$RUNNER_TEMP/xcodebuild-archive.log"
+          if [ -f "$log" ]; then
+            grep -iE "error:|provisioning|signing|development team|no profiles|certificate|entitlement|unable to" "$log" | tail -n 60 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          else
+            echo "::error::no archive log found"
+          fi
+
+      - name: Create export options
+        if: steps.credentials.outputs.configured == 'true'
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict/>
+          </plist>
+          PLIST
+          PLIST="$RUNNER_TEMP/ExportOptions.plist"
+          PLISTBUDDY="/usr/libexec/PlistBuddy"
+          "$PLISTBUDDY" -c "Add :destination string export" "$PLIST"
+          "$PLISTBUDDY" -c "Add :method string app-store-connect" "$PLIST"
+          "$PLISTBUDDY" -c "Add :signingStyle string manual" "$PLIST"
+          "$PLISTBUDDY" -c "Add :signingCertificate string $SIGN_IDENTITY" "$PLIST"
+          "$PLISTBUDDY" -c "Add :stripSwiftSymbols bool false" "$PLIST"
+          if [ -n "$ASC_TEAM_ID" ]; then
+            "$PLISTBUDDY" -c "Add :teamID string $ASC_TEAM_ID" "$PLIST"
+          fi
+          "$PLISTBUDDY" -c "Add :provisioningProfiles dict" "$PLIST"
+          while IFS='=' read -r bundle name; do
+            if [ -n "$bundle" ] && [ -n "$name" ]; then
+              "$PLISTBUDDY" \
+                -c "Add :provisioningProfiles:$bundle string $name" \
+                "$PLIST"
+            fi
+          done < "$RUNNER_TEMP/profile-map.txt"
+          cat "$PLIST"
+
+      - name: Export archive
+        if: steps.credentials.outputs.configured == 'true'
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Coverfy.xcarchive" \
+            -exportPath "$RUNNER_TEMP/Coverfy-export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            | tee "$RUNNER_TEMP/xcodebuild-export.log"
+
+      - name: Surface export failure
+        if: failure()
+        run: |
+          log="$RUNNER_TEMP/xcodebuild-export.log"
+          if [ -f "$log" ]; then
+            grep -iE "error:|provisioning|signing|no profiles|certificate|entitlement|unable to" "$log" | tail -n 60 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          else
+            echo "::error::no export log found"
+          fi
+
+      - name: Upload to App Store Connect
+        if: steps.credentials.outputs.configured == 'true'
+        run: |
+          set -o pipefail
+          ipa="$(find "$RUNNER_TEMP/Coverfy-export" -maxdepth 1 -name '*.ipa' | head -n1)"
+          echo "Uploading IPA: $ipa"
+          xcrun altool \
+            --upload-app \
+            --file "$ipa" \
+            --type ios \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID" \
+            2>&1 | tee "$RUNNER_TEMP/altool-upload.log"
+
+      - name: Surface upload failure
+        if: failure()
+        run: |
+          log="$RUNNER_TEMP/altool-upload.log"
+          if [ -f "$log" ]; then
+            tail -n 60 "$log" | while IFS= read -r line; do echo "::error::$line"; done
+          else
+            echo "::error::no upload log found (ipa may be missing)"
+          fi
+
+      - name: Set What to Test notes and assign TestFlight group
+        if: steps.credentials.outputs.configured == 'true'
+        run: |
+          set -euo pipefail
+          pip3 install --quiet 'pyjwt[crypto]' requests \
+            || pip3 install --quiet --user 'pyjwt[crypto]' requests \
+            || pip3 install --quiet --break-system-packages 'pyjwt[crypto]' requests
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          import sys
+          import time
+          from pathlib import Path
+
+          import jwt
+          import requests
+
+          API_BASE = "https://api.appstoreconnect.apple.com/v1"
+          BUNDLE_ID = "com.ramivisuals.coverfy"
+          REQUEST_TIMEOUT = 30
+
+          key_id = os.environ["ASC_KEY_ID"]
+          issuer_id = os.environ["ASC_ISSUER_ID"]
+          key_path = os.environ["ASC_KEY_PATH"]
+          build_number = os.environ["GITHUB_RUN_NUMBER"]
+          group_name = os.environ["BETA_GROUP_NAME"]
+
+          def token():
+              now = int(time.time())
+              with open(key_path, "rb") as handle:
+                  private_key = handle.read()
+              return jwt.encode(
+                  {
+                      "iss": issuer_id,
+                      "iat": now,
+                      "exp": now + 15 * 60,
+                      "aud": "appstoreconnect-v1",
+                  },
+                  private_key,
+                  algorithm="ES256",
+                  headers={"kid": key_id, "typ": "JWT"},
+              )
+
+          def request(method, url, fatal=True, **kwargs):
+              headers = dict(kwargs.pop("headers", {}))
+              headers["Authorization"] = f"Bearer {token()}"
+              response = requests.request(
+                  method, url, headers=headers,
+                  timeout=REQUEST_TIMEOUT, **kwargs,
+              )
+              if response.status_code >= 400 and fatal:
+                  print(
+                      f"::error::App Store Connect API {method} {url} "
+                      f"returned HTTP {response.status_code}: {response.text}",
+                      flush=True,
+                  )
+                  sys.exit(1)
+              return response
+
+          app_response = request(
+              "GET", f"{API_BASE}/apps",
+              params={"filter[bundleId]": BUNDLE_ID},
+          )
+          apps = app_response.json().get("data", [])
+          if not apps:
+              print(f"::warning::No app found for bundle id {BUNDLE_ID}; skipping TestFlight setup.")
+              sys.exit(0)
+          app_id = apps[0]["id"]
+
+          # Wait for the build to finish processing (max 30 min).
+          deadline = time.monotonic() + 30 * 60
+          build_id = None
+          while time.monotonic() < deadline:
+              builds = request(
+                  "GET", f"{API_BASE}/builds",
+                  params={
+                      "filter[app]": app_id,
+                      "filter[version]": build_number,
+                      "limit": "1",
+                  },
+              ).json().get("data", [])
+              if builds:
+                  build_id = builds[0]["id"]
+                  state = builds[0].get("attributes", {}).get("processingState", "UNKNOWN")
+                  print(f"Build {build_number} ({build_id}): {state}", flush=True)
+                  if state == "VALID":
+                      break
+              else:
+                  build_id = None
+                  print(f"Build {build_number} not visible yet; retrying...", flush=True)
+              time.sleep(30)
+
+          if not build_id:
+              print("::warning::Build not found within 30 minutes; assign it manually in TestFlight.")
+              sys.exit(0)
+
+          # What to Test notes from CHANGELOG.md (same text for both locales).
+          def changelog_notes():
+              changelog = Path("CHANGELOG.md")
+              if not changelog.is_file():
+                  return ""
+              contents = changelog.read_text(encoding="utf-8")
+              headings = list(re.finditer(r"(?mi)^##\s+\[([^\]]+)\].*$", contents))
+              if not headings:
+                  return ""
+              selected = next(
+                  (h for h in headings if h.group(1).strip().lower() != "unreleased"),
+                  headings[0],
+              )
+              end = (
+                  headings[headings.index(selected) + 1].start()
+                  if selected is not headings[-1]
+                  else len(contents)
+              )
+              lines = []
+              for line in contents[selected.end():end].splitlines():
+                  line = line.strip()
+                  if line.startswith("- "):
+                      line = "• " + line[2:].strip()
+                  lines.append(line)
+              return "\n".join(lines).strip()[:4000]
+
+          notes = changelog_notes() or "Nueva compilación de prueba."
+
+          localizations = request(
+              "GET",
+              f"{API_BASE}/builds/{build_id}/betaBuildLocalizations",
+              fatal=False,
+          ).json().get("data", [])
+          for locale in ("es-ES", "en-US"):
+              existing = next(
+                  (l for l in localizations if l.get("attributes", {}).get("locale") == locale),
+                  None,
+              )
+              if existing:
+                  method = "PATCH"
+                  url = f"{API_BASE}/betaBuildLocalizations/{existing['id']}"
+                  payload = {"data": {"type": "betaBuildLocalizations", "id": existing["id"],
+                                      "attributes": {"whatsNew": notes}}}
+              else:
+                  method = "POST"
+                  url = f"{API_BASE}/betaBuildLocalizations"
+                  payload = {"data": {"type": "betaBuildLocalizations",
+                                      "attributes": {"locale": locale, "whatsNew": notes},
+                                      "relationships": {"build": {"data": {"type": "builds", "id": build_id}}}}}
+              resp = request(method, url, fatal=False,
+                             headers={"Content-Type": "application/json"}, json=payload)
+              if resp.status_code in (200, 201, 204):
+                  print(f"What to Test notes set for {locale}.", flush=True)
+              else:
+                  print(f"::warning::Could not set What to Test for {locale}: HTTP {resp.status_code}", flush=True)
+
+          # Assign build to the configured beta group.
+          groups = request(
+              "GET", f"{API_BASE}/betaGroups",
+              params={"filter[app]": app_id},
+          ).json().get("data", [])
+          group = next(
+              (g for g in groups if g.get("attributes", {}).get("name") == group_name),
+              None,
+          )
+          if group is None and groups:
+              group = groups[0]
+          if group is None:
+              print("::warning::No beta groups found; add the build to testers manually.")
+          else:
+              resp = request(
+                  "POST",
+                  f"{API_BASE}/betaGroups/{group['id']}/relationships/builds",
+                  fatal=False,
+                  headers={"Content-Type": "application/json"},
+                  json={"data": [{"type": "builds", "id": build_id}]},
+              )
+              if resp.status_code in (200, 201, 204):
+                  print(f"Build assigned to beta group '{group.get('attributes', {}).get('name')}'.", flush=True)
+              else:
+                  print(f"::warning::Could not assign build to beta group: HTTP {resp.status_code}: {resp.text}", flush=True)
+          PY
+
+      - name: Create GitHub Release
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+
+      - name: Commit release version back to repo
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.name }}
+          NEW_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -e
+          printf 'MARKETING_VERSION=%s\nCURRENT_PROJECT_VERSION=%s\nTAG=%s\n' "$NEW_VERSION" "${GITHUB_RUN_NUMBER}" "$NEW_TAG" > VERSION
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add VERSION CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "chore(release): ${NEW_TAG} [skip ci]"
+            git push origin HEAD:main || echo "::warning::Could not push version commit; continuing."
+          fi
