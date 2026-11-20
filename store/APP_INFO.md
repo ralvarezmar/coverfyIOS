@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| **Bundle ID** | `com.coverfy.app` (pendiente confirmar si también pasamos a `com.ramivisuals.coverfy` para unificar con Android) |
+| **Bundle ID** | `com.ramivisuals.coverfy` (pendiente confirmar si también pasamos a `com.ramivisuals.coverfy` para unificar con Android) |
 | **Nombre visible** | Coverfy |
 | **Versión inicial** | 0.0.1 (build 1) |
 | **Deployment target** | iOS 17.0 |
