@@ -6,6 +6,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+### Added
+- Onboarding en el primer arranque: tres pantallas que explican el escaneo de tickets, los avisos de caducidad y las reclamaciones, con opción de saltarlo.
+### Changed
+- Paleta de colores de marca (azul/turquesa/naranja) y filas de la lista coloreadas según estado (naranja si caduca en <=30 días, rojo si caducada).
+
 ## [0.0.1] - 2026-11-19
 
 ### Added

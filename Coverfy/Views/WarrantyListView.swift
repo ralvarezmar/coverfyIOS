@@ -20,6 +20,11 @@ struct WarrantyListView: View {
                         NavigationLink(value: warranty) {
                             WarrantyRow(warranty: warranty)
                         }
+                        .listRowBackground(
+                            warranty.isExpired ? Color.red.opacity(0.12)
+                            : warranty.daysUntilExpiry <= 30 ? Color.coverfyOrange.opacity(0.15)
+                            : Color.clear
+                        )
                     }
                 }
             }
