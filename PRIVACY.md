@@ -39,7 +39,7 @@ Si esta política cambia, la versión actualizada se publicará en este mismo do
 
 ## Contacto
 
-Para cualquier duda sobre esta política: **[tu email de contacto]**
+Para cualquier duda sobre esta política: **r.alvarezmar@gmail.com**
 
 ---
 
@@ -84,4 +84,4 @@ If this policy changes, the updated version will be published in this same docum
 
 ## Contact
 
-For any questions about this policy: **[your contact email]**
+For any questions about this policy: **r.alvarezmar@gmail.com**
