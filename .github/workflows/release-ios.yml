@@ -128,8 +128,16 @@ jobs:
           KEY_DIR="$RUNNER_TEMP/app-store-connect"
           KEY_PATH="$KEY_DIR/AuthKey_${ASC_KEY_ID}.p8"
           mkdir -p "$KEY_DIR" "$HOME/.appstoreconnect/private_keys"
-          printf '%s' "$ASC_API_KEY_P8" | base64 -D > "$KEY_PATH"
+          if printf '%s' "$ASC_API_KEY_P8" | grep -q "BEGIN PRIVATE KEY"; then
+            printf '%s\n' "$ASC_API_KEY_P8" > "$KEY_PATH"
+          else
+            printf '%s' "$ASC_API_KEY_P8" | base64 -D > "$KEY_PATH"
+          fi
           chmod 600 "$KEY_PATH"
+          if ! grep -q "BEGIN PRIVATE KEY" "$KEY_PATH"; then
+            echo "::error::ASC_API_KEY_P8 is neither the .p8 contents nor its base64 encoding."
+            exit 1
+          fi
           cp "$KEY_PATH" "$HOME/.appstoreconnect/private_keys/"
           echo "ASC_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
 
