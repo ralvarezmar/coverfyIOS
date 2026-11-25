@@ -94,10 +94,17 @@ jobs:
 
       - name: Check App Store Connect credentials
         id: credentials
+        env:
+          IOS_DIST_CERT_P12: ${{ secrets.IOS_DIST_CERT_P12 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_APP_PROFILE: ${{ secrets.IOS_APP_PROFILE }}
         run: |
           set -euo pipefail
           if [[ -z "$ASC_KEY_ID" || -z "$ASC_ISSUER_ID" || -z "$ASC_API_KEY_P8" ]]; then
             echo "::warning::Configure ASC_KEY_ID, ASC_ISSUER_ID, and ASC_API_KEY_P8 to enable releases."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          elif [[ -z "$IOS_DIST_CERT_P12" || -z "$IOS_DIST_CERT_PASSWORD" || -z "$IOS_APP_PROFILE" ]]; then
+            echo "::warning::Configure IOS_DIST_CERT_P12, IOS_DIST_CERT_PASSWORD and IOS_APP_PROFILE to enable TestFlight uploads."
             echo "configured=false" >> "$GITHUB_OUTPUT"
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
