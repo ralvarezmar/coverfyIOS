@@ -183,6 +183,12 @@ jobs:
           cp "$tmp" "$PROFILE_DIR/$uuid.mobileprovision"
           printf '%s=%s\n' "$bundle" "$name" >> "$RUNNER_TEMP/profile-map.txt"
           echo "Installed profile '$name' ($uuid) for bundle $bundle"
+          identity_sha="$(security find-identity -v -p codesigning "$KEYCHAIN" | awk 'NR==1{print $2}')"
+          profile_shas="$(python3 -c 'import hashlib,plistlib,sys; print(" ".join(hashlib.sha1(c).hexdigest().upper() for c in plistlib.load(open(sys.argv[1],"rb"))["DeveloperCertificates"]))' "$plist")"
+          if [[ " $profile_shas " != *" $identity_sha "* ]]; then
+            echo "::error::The .p12 certificate ($identity_sha) is not included in profile '$name' ($profile_shas). Regenerate the profile with this certificate or export the matching .p12."
+            exit 1
+          fi
 
       - name: Inject SerpAPI key
         env:
@@ -213,7 +219,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            | tee "$RUNNER_TEMP/xcodebuild-archive.log"
+            2>&1 | tee "$RUNNER_TEMP/xcodebuild-archive.log"
 
       - name: Surface archive failure
         if: failure()
@@ -269,7 +275,7 @@ jobs:
             -authenticationKeyPath "$ASC_KEY_PATH" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            | tee "$RUNNER_TEMP/xcodebuild-export.log"
+            2>&1 | tee "$RUNNER_TEMP/xcodebuild-export.log"
 
       - name: Surface export failure
         if: failure()

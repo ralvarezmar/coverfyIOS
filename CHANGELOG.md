@@ -6,6 +6,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+### Changed
+- El workflow de release comprueba que el certificado y el perfil coinciden y muestra los errores de firma y exportación.
+
 ## [0.4.0] - 2026-11-25
 
 ### Added
