@@ -186,6 +186,7 @@ struct AddWarrantyView: View {
             guard let parsed = try? await ReceiptScanner.scan(image) else { return }
             parsedReceipt = parsed
             if store.isEmpty, let s = parsed.store { store = s }
+            if productName.isEmpty, let p = parsed.productName { productName = p }
             if let d = parsed.purchaseDate { purchaseDate = d }
         }
     }
