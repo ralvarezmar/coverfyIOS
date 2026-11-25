@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-11-25
+
 ### Changed
 - Las releases de GitHub llevan como notas la sección del changelog de cada versión.
 
