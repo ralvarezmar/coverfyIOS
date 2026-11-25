@@ -6,6 +6,12 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+### Added
+- Al escanear el ticket, la app busca el nombre del producto y pone sola la primera imagen encontrada como foto del producto. Se puede cambiar con "Buscar imagen del producto" o con la cámara.
+
+### Fixed
+- La miniatura de la foto del producto no aparecía en la lista. Ahora se genera una miniatura cuadrada (con la orientación correcta) y se muestra con un icono genérico si no hay foto.
+
 ## [0.4.4] - 2026-11-25
 
 ### Changed

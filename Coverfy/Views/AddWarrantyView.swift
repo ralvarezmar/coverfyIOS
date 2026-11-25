@@ -19,6 +19,8 @@ struct AddWarrantyView: View {
     @State private var imageCandidates: [ImageCandidate] = []
     @State private var searchingImages = false
     @State private var imageSearchError: String?
+    @State private var autoSearchingImage = false
+    @State private var autoPickedImage = false
     @State private var scanning = false
     @State private var receiptImage: UIImage?
     @State private var parsedReceipt: ReceiptParser.ParsedReceipt?
@@ -65,12 +67,22 @@ struct AddWarrantyView: View {
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }
+                    if autoSearchingImage {
+                        HStack {
+                            ProgressView()
+                            Text("Buscando imagen del producto…")
+                        }
+                    }
                     if let image = productImage {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
                             .frame(height: 160)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
+                        if autoPickedImage {
+                            Text("Imagen elegida automáticamente. Puedes cambiarla.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
                     }
                 }
 
@@ -103,7 +115,10 @@ struct AddWarrantyView: View {
                 }
             }
             .sheet(isPresented: $showProductCamera) {
-                CameraView { image in productImage = image }
+                CameraView { image in
+                    productImage = image
+                    autoPickedImage = false
+                }
             }
             .sheet(isPresented: $showImagePicker) { imagePicker }
         }
@@ -172,6 +187,7 @@ struct AddWarrantyView: View {
             defer { searchingImages = false }
             if let image = await ProductImageSearch.download(candidate) {
                 productImage = image
+                autoPickedImage = false
                 showImagePicker = false
             } else {
                 imageSearchError = "No se pudo descargar la imagen elegida."
@@ -188,6 +204,28 @@ struct AddWarrantyView: View {
             if store.isEmpty, let s = parsed.store { store = s }
             if productName.isEmpty, let p = parsed.productName { productName = p }
             if let d = parsed.purchaseDate { purchaseDate = d }
+            if productImage == nil { autoPickImage() }
+        }
+    }
+
+    /// After a scan, fetches the first usable search result as the product photo.
+    private func autoPickImage() {
+        let query = productName.trimmingCharacters(in: .whitespaces)
+        guard ProductImageSearch.isEnabled, !query.isEmpty else { return }
+        autoSearchingImage = true
+        Task {
+            defer { autoSearchingImage = false }
+            guard let candidates = try? await ProductImageSearch.search(query) else { return }
+            for candidate in candidates.prefix(3) {
+                guard productImage == nil else { return }
+                if let image = await ProductImageSearch.download(candidate) {
+                    if productImage == nil {
+                        productImage = image
+                        autoPickedImage = true
+                    }
+                    return
+                }
+            }
         }
     }
 
