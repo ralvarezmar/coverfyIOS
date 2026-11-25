@@ -14,6 +14,10 @@ Coverfy funciona **completamente en local, sin cuenta de usuario y sin nube**. T
 
 **El reconocimiento de texto (OCR) se ejecuta íntegramente en tu dispositivo** (ML Kit on-device). Las imágenes y los textos de los tickets **no se envían a ningún servidor**.
 
+## Búsqueda de imagen del producto (opcional)
+
+Si pulsas **"Buscar imagen del producto"**, la app envía **solo el nombre del producto** que has escrito a [SerpAPI](https://serpapi.com/legal) (Google Imágenes) para mostrarte imágenes candidatas, y descarga la que elijas para guardarla en tu dispositivo. No se envían fotos, tickets ni ningún otro dato. Si no usas esta función, no se realiza ninguna conexión.
+
 ## Datos que NO recoge la aplicación
 
 Coverfy **no recoge, almacena en servidores ni comparte** ningún dato personal:
@@ -58,6 +62,10 @@ Coverfy works **entirely on-device, with no user account and no cloud**. Everyth
 - Text extracted from receipts via OCR.
 
 **Text recognition (OCR) runs entirely on your device** (ML Kit on-device). Receipt images and text are **never sent to any server**.
+
+## Product image search (optional)
+
+If you tap **"Search product image"**, the app sends **only the product name** you typed to [SerpAPI](https://serpapi.com/legal) (Google Images) to show candidate pictures, and downloads the one you pick to store it on your device. No photos, receipts or other data are sent. If you don't use this feature, no connection is made.
 
 ## Data the app does NOT collect
 
