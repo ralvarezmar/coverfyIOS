@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-11-25
+
 ### Changed
 - El workflow de release acepta la clave `.p8` de App Store Connect tanto en texto como en base64.
 
