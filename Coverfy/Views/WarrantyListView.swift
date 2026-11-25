@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct WarrantyListView: View {
     @Environment(\.modelContext) private var context
@@ -50,7 +51,20 @@ private struct WarrantyRow: View {
     let warranty: Warranty
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
+            if let url = warranty.productURL, let image = UIImage(contentsOfFile: url.path) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 48, height: 48)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else {
+                Image(systemName: "shippingbox.fill")
+                    .font(.title2)
+                    .foregroundStyle(Color.coverfyBlue)
+                    .frame(width: 48, height: 48)
+                    .background(Color.coverfyBlue.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            }
             VStack(alignment: .leading, spacing: 4) {
                 Text(warranty.productName).font(.headline)
                 if !warranty.store.isEmpty {

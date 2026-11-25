@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+### Added
+- Foto del producto: captura opcional con la cámara en el alta, mostrada como miniatura en la lista y como cabecera en el detalle.
+- Al compartir la reclamación se adjunta la foto del ticket junto al texto.
+### Changed
+- Pantalla de detalle rediseñada: barra superior de color, tarjeta de estado con días restantes y barra de progreso, tarjeta de datos con iconos.
+### Fixed
+- Las fotos se resuelven por nombre dentro de Documents, para que no se pierdan cuando cambia la ruta del sandbox tras una actualización.
+
 ## [0.0.2] - 2026-11-24
 
 ### Added

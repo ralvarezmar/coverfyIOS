@@ -13,6 +13,8 @@ struct AddWarrantyView: View {
     @State private var notes = ""
 
     @State private var showCamera = false
+    @State private var showProductCamera = false
+    @State private var productImage: UIImage?
     @State private var scanning = false
     @State private var receiptImage: UIImage?
     @State private var parsedReceipt: ReceiptParser.ParsedReceipt?
@@ -37,6 +39,22 @@ struct AddWarrantyView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(maxHeight: 200)
+                    }
+                }
+
+                Section("Foto del producto") {
+                    Button {
+                        showProductCamera = true
+                    } label: {
+                        Label(productImage == nil ? "Añadir foto del producto" : "Cambiar foto",
+                              systemImage: "camera.on.rectangle")
+                    }
+                    if let image = productImage {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 160)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
 
@@ -68,6 +86,9 @@ struct AddWarrantyView: View {
                     scan(image)
                 }
             }
+            .sheet(isPresented: $showProductCamera) {
+                CameraView { image in productImage = image }
+            }
         }
     }
 
@@ -82,16 +103,19 @@ struct AddWarrantyView: View {
         }
     }
 
+    private func store(_ image: UIImage?, prefix: String) -> String? {
+        guard let image, let data = image.jpegData(compressionQuality: 0.8) else { return nil }
+        let name = "\(prefix)_\(UUID().uuidString).jpg"
+        let url = FileManager.default.urls(
+            for: .documentDirectory, in: .userDomainMask
+        )[0].appendingPathComponent(name)
+        try? data.write(to: url)
+        return name
+    }
+
     private func save() {
-        var imagePath: String?
-        if let image = receiptImage,
-           let data = image.jpegData(compressionQuality: 0.8) {
-            let url = FileManager.default.urls(
-                for: .documentDirectory, in: .userDomainMask
-            )[0].appendingPathComponent("receipt_\(UUID().uuidString).jpg")
-            try? data.write(to: url)
-            imagePath = url.path
-        }
+        let imagePath = store(receiptImage, prefix: "receipt")
+        let productPath = store(productImage, prefix: "product")
 
         let warranty = Warranty(
             productName: productName.trimmingCharacters(in: .whitespaces),
@@ -99,6 +123,7 @@ struct AddWarrantyView: View {
             purchaseDate: purchaseDate,
             warrantyMonths: warrantyMonths,
             receiptImagePath: imagePath,
+            productImagePath: productPath,
             receiptText: parsedReceipt?.rawText,
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines)
         )
