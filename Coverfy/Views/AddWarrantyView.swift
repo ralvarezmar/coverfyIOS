@@ -15,6 +15,10 @@ struct AddWarrantyView: View {
     @State private var showCamera = false
     @State private var showProductCamera = false
     @State private var productImage: UIImage?
+    @State private var showImagePicker = false
+    @State private var imageCandidates: [ImageCandidate] = []
+    @State private var searchingImages = false
+    @State private var imageSearchError: String?
     @State private var scanning = false
     @State private var receiptImage: UIImage?
     @State private var parsedReceipt: ReceiptParser.ParsedReceipt?
@@ -48,6 +52,18 @@ struct AddWarrantyView: View {
                     } label: {
                         Label(productImage == nil ? "Añadir foto del producto" : "Cambiar foto",
                               systemImage: "camera.on.rectangle")
+                    }
+                    if ProductImageSearch.isEnabled {
+                        Button {
+                            searchImages()
+                        } label: {
+                            Label("Buscar imagen del producto", systemImage: "magnifyingglass")
+                        }
+                        .disabled(productName.trimmingCharacters(in: .whitespaces).isEmpty)
+                        if productName.trimmingCharacters(in: .whitespaces).isEmpty {
+                            Text("Escribe el nombre del producto para buscar su imagen.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
                     }
                     if let image = productImage {
                         Image(uiImage: image)
@@ -89,6 +105,77 @@ struct AddWarrantyView: View {
             .sheet(isPresented: $showProductCamera) {
                 CameraView { image in productImage = image }
             }
+            .sheet(isPresented: $showImagePicker) { imagePicker }
+        }
+    }
+
+    private var imagePicker: some View {
+        NavigationStack {
+            Group {
+                if searchingImages {
+                    ProgressView("Buscando…")
+                } else if let imageSearchError {
+                    Text(imageSearchError).padding()
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                            ForEach(imageCandidates) { candidate in
+                                Button {
+                                    pick(candidate)
+                                } label: {
+                                    AsyncImage(url: candidate.thumbnail) { image in
+                                        image.resizable().scaledToFill()
+                                    } placeholder: {
+                                        Color.coverfyBlue.opacity(0.1)
+                                    }
+                                    .frame(height: 150)
+                                    .frame(maxWidth: .infinity)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+                            }
+                        }
+                        .padding()
+                    }
+                }
+            }
+            .navigationTitle("Elige una imagen")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cerrar") { showImagePicker = false }
+                }
+            }
+        }
+    }
+
+    private func searchImages() {
+        let query = productName.trimmingCharacters(in: .whitespaces)
+        showImagePicker = true
+        searchingImages = true
+        imageSearchError = nil
+        Task {
+            defer { searchingImages = false }
+            do {
+                imageCandidates = try await ProductImageSearch.search(query)
+                if imageCandidates.isEmpty {
+                    imageSearchError = "No se encontraron imágenes para \"\(query)\"."
+                }
+            } catch {
+                imageSearchError = "No se pudo buscar la imagen. Revisa la conexión."
+            }
+        }
+    }
+
+    private func pick(_ candidate: ImageCandidate) {
+        searchingImages = true
+        Task {
+            defer { searchingImages = false }
+            if let image = await ProductImageSearch.download(candidate) {
+                productImage = image
+                showImagePicker = false
+            } else {
+                imageSearchError = "No se pudo descargar la imagen elegida."
+            }
         }
     }
 
@@ -103,7 +190,7 @@ struct AddWarrantyView: View {
         }
     }
 
-    private func store(_ image: UIImage?, prefix: String) -> String? {
+    private func saveImage(_ image: UIImage?, prefix: String) -> String? {
         guard let image, let data = image.jpegData(compressionQuality: 0.8) else { return nil }
         let name = "\(prefix)_\(UUID().uuidString).jpg"
         let url = FileManager.default.urls(
@@ -114,8 +201,8 @@ struct AddWarrantyView: View {
     }
 
     private func save() {
-        let imagePath = store(receiptImage, prefix: "receipt")
-        let productPath = store(productImage, prefix: "product")
+        let imagePath = saveImage(receiptImage, prefix: "receipt")
+        let productPath = saveImage(productImage, prefix: "product")
 
         let warranty = Warranty(
             productName: productName.trimmingCharacters(in: .whitespaces),

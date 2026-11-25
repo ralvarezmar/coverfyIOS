@@ -19,6 +19,7 @@
 		AA00000000000000000A /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000A /* CameraView.swift */; };
 		AA00000000000000000B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000B /* Assets.xcassets */; };
 		AA00000000000000000C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000C /* Theme.swift */; };
+		AA00000000000000000D /* ProductImageSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000D /* ProductImageSearch.swift */; };
 		AA00000000000000000D /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000D /* OnboardingView.swift */; };
 /* End PBXBuildFile section */
 
@@ -36,6 +37,7 @@
 		BB00000000000000000A /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		BB00000000000000000B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BB00000000000000000C /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		BB00000000000000000D /* ProductImageSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductImageSearch.swift; sourceTree = "<group>"; };
 		BB00000000000000000D /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,6 +65,7 @@
 			children = (
 				BB000000000000000001 /* CoverfyApp.swift */,
 				BB00000000000000000C /* Theme.swift */,
+				BB00000000000000000D /* ProductImageSearch.swift */,
 				DD000000000000000003 /* Models */,
 				DD000000000000000004 /* OCR */,
 				DD000000000000000005 /* Notifications */,
@@ -207,6 +210,7 @@
 				AA000000000000000009 /* WarrantyDetailView.swift in Sources */,
 				AA00000000000000000A /* CameraView.swift in Sources */,
 				AA00000000000000000C /* Theme.swift in Sources */,
+				AA00000000000000000D /* ProductImageSearch.swift in Sources */,
 				AA00000000000000000D /* OnboardingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

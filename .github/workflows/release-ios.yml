@@ -184,6 +184,14 @@ jobs:
           printf '%s=%s\n' "$bundle" "$name" >> "$RUNNER_TEMP/profile-map.txt"
           echo "Installed profile '$name' ($uuid) for bundle $bundle"
 
+      - name: Inject SerpAPI key
+        env:
+          SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
+        run: |
+          if [ -n "$SERPAPI_API_KEY" ]; then
+            python3 -c 'import os,pathlib; p=pathlib.Path("Coverfy/ProductImageSearch.swift"); p.write_text(p.read_text().replace("__SERPAPI_API_KEY__", os.environ["SERPAPI_API_KEY"]))'
+          fi
+
       - name: Archive app
         if: steps.credentials.outputs.configured == 'true'
         env:

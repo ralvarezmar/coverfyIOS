@@ -6,6 +6,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+### Added
+- Búsqueda de imagen del producto: "Buscar imagen del producto" busca el nombre en SerpAPI (Google Imágenes) y te deja elegir una imagen sin hacer la foto.
+
 ## [0.1.1] - 2026-11-25
 
 ### Added
