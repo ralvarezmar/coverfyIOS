@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-25
+
 ### Added
 - El escaneo del ticket rellena también el nombre del producto (la línea de artículo más cara antes del total), listo para buscar su imagen. Se puede editar.
 
