@@ -9,6 +9,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 ## [0.4.4] - 2026-11-25
 
 ### Changed
+- El workflow de release explica por qué no puede asignar una build a un grupo de TestFlight.
+
+### Changed
 - Las releases de GitHub llevan como notas la sección del changelog de cada versión.
 
 ## [0.4.3] - 2026-11-25

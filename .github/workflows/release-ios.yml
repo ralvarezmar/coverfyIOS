@@ -485,8 +485,12 @@ jobs:
           )
           if group is None and groups:
               group = groups[0]
+          attrs = (group or {}).get("attributes", {})
+          print(f"Beta groups: {[(g['attributes'].get('name'), g['attributes'].get('isInternalGroup')) for g in groups]}", flush=True)
           if group is None:
               print("::warning::No beta groups found; add the build to testers manually.")
+          elif attrs.get("isInternalGroup") and attrs.get("hasAccessToAllBuilds"):
+              print(f"Internal group '{attrs.get('name')}' already receives every build automatically.", flush=True)
           else:
               resp = request(
                   "POST",
@@ -498,7 +502,8 @@ jobs:
               if resp.status_code in (200, 201, 204):
                   print(f"Build assigned to beta group '{group.get('attributes', {}).get('name')}'.", flush=True)
               else:
-                  print(f"::warning::Could not assign build to beta group: HTTP {resp.status_code}: {resp.text}", flush=True)
+                  detail = " ".join(e.get("detail", "") for e in resp.json().get("errors", [])) if resp.content else ""
+                  print(f"::warning::Could not assign build to beta group '{attrs.get('name')}' (internal={attrs.get('isInternalGroup')}): HTTP {resp.status_code}: {detail or resp.text}".replace("\n", " "), flush=True)
           PY
 
       - name: Extract release notes from changelog
