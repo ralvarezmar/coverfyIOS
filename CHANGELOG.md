@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-25
+
 ### Added
 - Foto del producto: captura opcional con la cámara en el alta, mostrada como miniatura en la lista y como cabecera en el detalle.
 - Al compartir la reclamación se adjunta la foto del ticket junto al texto.
