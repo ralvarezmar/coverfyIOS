@@ -6,6 +6,8 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-25
+
 ### Added
 - Al escanear el ticket, la app busca el nombre del producto y pone sola la primera imagen encontrada como foto del producto. Se puede cambiar con "Buscar imagen del producto" o con la cámara.
 
