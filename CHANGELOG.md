@@ -10,8 +10,6 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Changed
 - El workflow de release acepta la clave `.p8` de App Store Connect tanto en texto como en base64.
-
-### Changed
 - El workflow de release comprueba que el certificado y el perfil coinciden y muestra los errores de firma y exportación.
 
 ## [0.4.0] - 2026-11-25
